@@ -1,0 +1,32 @@
+name: "Test"
+
+on:
+  push:
+  pull_request:
+  schedule:
+  - cron: '0 0 * * *'  # every day at midnight, to test against nightlies
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        kongVersion:
+        - "2.7.x"
+        - "2.8.x"
+        - "nightly"
+        - "2.7.2.x"
+        - "2.8.1.x"
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Kong/kong-pongo-action@v1
+      with:
+        kong_version: ${{ matrix.kongVersion }}
+        # non-Kong-Inc users should uncomment the following line and provide
+        # the secret by that name if testing against Enterprise versions.
+        # Kong Inc users should use the `Kong/kong-license` action
+        license: ${{ secrets.KONG_LICENSE_DATA }}
+    - run: pongo run -- --coverage
