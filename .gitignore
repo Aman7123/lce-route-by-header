@@ -1,41 +1,20 @@
-# Compiled Lua sources
-luac.out
+# servroot is typically the nginx/Kong workingdirectory when testing
+servroot
 
-# luarocks build files
+# packed distribution format for LuaRocks
+*.rock
+# exclude Pongo shell history
+.pongo/.ash_history
+# exclude LuaCov statistics file
+luacov.stats.out
+# exclude LuaCov report
+luacov.report.out
+# exclude Pongo containerid file
+.containerid
+
+# MacOSX specific
+*.DS_Store
+
+# McAfee
+spec/kong_tests_local.conf
 *.src.rock
-*.zip
-*.tar.gz
-
-# Object files
-*.o
-*.os
-*.ko
-*.obj
-*.elf
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-*.def
-*.exp
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
