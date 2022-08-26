@@ -3,9 +3,7 @@ version = "1.0.0-1"
 supported_platforms = {"linux", "macosx"}
 
 description = {
-  summary = "Kong plugin to calculate upstream",
-  homepage = "https://github.com/Aman7123/lce-route-by-header",
-  maintainer = "Aaron Renner <aaron.renner@konghq.com>"
+  summary = "Kong plugin to calculate upstream"
 }
 
 dependencies = {}

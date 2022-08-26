@@ -15,7 +15,6 @@ return function(config, value)
   local keys = config.key_names
   -- Debug
   if debug then
-    ngx.log(ngx.INFO, "Config: "..cjson.encode(config))
     ngx.log(ngx.INFO, "Incoming value: "..value)
   end
   -- Lookup store id in API
@@ -27,7 +26,7 @@ return function(config, value)
   httpc:set_timeout(config.upstream_timeout)
   local url = config.registry_api_url:gsub((config.value_matching_pattern or ""), value, nil, true)
   if debug then
-    ngx.log(ngx.INFO, "Formatted url: "..url)
+    ngx.log(ngx.INFO, "Formatted fetch url: "..url)
   end
   local res, err = httpc:request_uri(url, params) -- Actually GETS url
   -- Ensure response is safe
@@ -43,19 +42,14 @@ return function(config, value)
     ngx.log(ngx.INFO, "Found resonse body: "..res.body)
   end
   -- Process jp lookup
-  local template = config.path_to_url:gsub((config.value_matching_pattern or ""), value, nil, true)
-  if debug then
-    ngx.log(ngx.INFO, "Formatted jp: "..template)
-  end
-  local serviceUrl = jp_value(apiResponse, template)
+  --- Perform jp search
+  local serviceUrl = jp_value(apiResponse, config.path_to_url)
   if debug then
     ngx.log(ngx.INFO, "Found with jp: "..cjson.encode(serviceUrl))
   end
+  -- Validate serviceUrl
   if type(serviceUrl) ~= "string" then
     return nil, "Internal jsonpath parsing returned too many results"
-  end
-  if debug then
-    ngx.log(ngx.INFO, "Found serviceUrl: "..serviceUrl)
   end
   -- Complete
   return serviceUrl, nil

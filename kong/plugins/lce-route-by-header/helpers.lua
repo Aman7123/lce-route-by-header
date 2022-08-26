@@ -1,4 +1,11 @@
+local CONTENT_TYPE = "Content-Type"
+local cjson = require "cjson.safe"
 local url = require "socket.url"
+local lce_lookup = require "kong.plugins.lce-route-by-header.lce-lookup"
+local Multipart = require "multipart"
+local utils = require "kong.tools.utils"
+local kong = kong
+local ngx = ngx
 local parsed_urls_cache = {}
 local _M = {}
 
@@ -26,13 +33,111 @@ function _M.parse_url(host_url)
   return parsed_url
 end
 
-function _M.arrayToString(array)
+function _M.tbl_to_string(array)
   local str = "["
   for i, v in ipairs(array) do
     str = str .. v
     if i < #array then str = str .. "," end
   end
   return str .. "]"
+end
+
+-- Custom implementation for integrating the Kong Cache 
+function _M.cache(config, key)
+  local value, err = kong.cache:get(key, { ttl = config.cache_ttl }, lce_lookup, config, key)
+  return value, err
+end
+
+-- available in oauth2 Kong plugin
+function _M.retrieve_parameters(skip_large_bodies)
+  -- ngx.req.read_body()
+  local body_in = _M.read_request_body(skip_large_bodies)
+  local body_parameters, err
+  local content_type = ngx.req.get_headers()[CONTENT_TYPE]
+  if content_type and string.find(content_type:lower(), "multipart/form-data", nil, true) then
+    body_parameters = Multipart(body_in, content_type):get_all()
+  elseif content_type and string.find(content_type:lower(), "application/json", nil, true) then
+    body_parameters, err = cjson.decode(body_in)
+    if err then
+      body_parameters = {}
+    end
+  else
+    body_parameters = ngx.req.get_post_args()
+  end
+
+  return utils.table_merge(ngx.req.get_uri_args(), body_parameters)
+end
+
+-- This function can loop a Lua table recursivly for a given key.
+function _M.loop_table(t, key)
+  local keyLc = key:lower()
+  for k, v in pairs(t) do
+    if tostring(k):lower() == keyLc then
+      return v
+    elseif type(v) == "table" then
+      local result = _M.loop_table(v, keyLc)
+      if result then
+        return result
+      end
+    end
+  end
+end
+
+function _M.read_request_body(skip_large_bodies)
+  ngx.req.read_body()
+  local body = ngx.req.get_body_data()
+
+  if not body then
+    -- see if body was buffered to tmp file, payload could have exceeded client_body_buffer_size
+    local body_filepath = ngx.req.get_body_file()
+    if body_filepath then
+      if skip_large_bodies then
+        ngx.log(ngx.ERR, "request body was buffered to disk, too large")
+      else
+        local file = io.open(body_filepath, "rb")
+        body = file:read("*all")
+        file:close()
+      end
+    end
+  end
+
+  return body
+end
+
+function _M.combine_paths(path_a, path_b)
+  path_a = path_a or ""
+  path_b = path_b or ""
+  if path_a == "" or path_a == "/" then
+    return path_b
+  end
+  if path_b == "" or path_b == "/" then
+    return path_a
+  end
+  -- remove trailing slash from a if it exists
+  if path_a:sub(-1) == "/" then
+    path_a = path_a:sub(1, -2)
+  end
+  -- remove leading slash from b if it exists
+  if path_b:sub(1, 1) == "/" then
+    path_b = path_b:sub(2)
+  end
+  -- remove trailing slash from b if it exists
+  if path_b:sub(-1) == "/" then
+    path_b = path_b:sub(1, -2)
+  end
+  return path_a .. "/" .. path_b
+end
+
+function _M.combine_query_strings(query_a, query_b)
+  query_a = query_a or ""
+  query_b = query_b or ""
+  if query_a == "" then
+    return query_b
+  end
+  if query_b == "" then
+    return query_a
+  end
+  return query_a .. "&" .. query_b
 end
 
 return _M

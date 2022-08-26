@@ -9,12 +9,13 @@ return {
     { config = {
       type = "record",
       fields = {
-        {upstream_timeout = {type = "number", default = 60000, required = true}},
-        {registry_api_url = typedefs.url { required = true }},
+        {cache_ttl = {type = "number", default = 300, required = true}},
+        {registry_api_url = typedefs.url { required = true}},
         {value_matching_pattern = {type = "string", default = "%%s"}},
         {key_names = {type = "array", required = true, elements = {type = "string"}}},
         {path_to_url = {type = "string", required = true}},
         {error_response_status_code = {type = "number", default = 500, required = true}},
+        {skip_large_bodies = {type = "boolean", default = false}},
         {debug = {type = "boolean", default = true}},
       }
     } }
