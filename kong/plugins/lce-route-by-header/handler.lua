@@ -1,7 +1,4 @@
-local cjson = require "cjson.safe"
-local PLUGIN_NAME = "lce-route-by-header"
 local read_params = require "kong.plugins.lce-route-by-header.helpers".retrieve_parameters
-local lce_lookup = require "kong.plugins.lce-route-by-header.lce-lookup"
 local parse_url = require "kong.plugins.lce-route-by-header.helpers".parse_url
 local lce_cache = require "kong.plugins.lce-route-by-header.helpers".cache
 local combine_paths = require "kong.plugins.lce-route-by-header.helpers".combine_paths

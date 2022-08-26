@@ -8,11 +8,10 @@ return function(config, value)
   if (type(config) ~= "table") and (type(value) ~= "string") then
     local a = "Invalid arguments, "
     local b = "arg#1 is ".. type(config) .. " and must be table "
-    local c = "arg#2 is ".. type(params) .. " and must be string"
+    local c = "arg#2 is ".. type(value) .. " and must be string"
     return nil, (a .. b .. c)
   end
   local debug = config.debug
-  local keys = config.key_names
   -- Debug
   if debug then
     ngx.log(ngx.INFO, "Incoming value: "..value)
