@@ -1,6 +1,5 @@
 local helpers = require "spec.helpers"
 local PLUGIN_NAME = "lce-route-by-header"
-local cjson = require "cjson.safe"
 
 for _, strategy in helpers.each_strategy({"off", "postgres"}) do
   describe(PLUGIN_NAME .. ": (access) [#" .. strategy .. "]", function()
