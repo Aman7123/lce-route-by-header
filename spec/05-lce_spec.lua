@@ -28,17 +28,20 @@ describe(PLUGIN_NAME .. ": (LCE functions)", function()
         local res, err = lce_parser(parserConfig, parserBody, parserHeaders)
         
         assert(res == "value")
+        assert.is_nil(err)
     end)
 
     it("parse value - body second", function()
         local res, err = lce_parser(parserConfig, parserBody, {})
         
         assert(res == "0d7ecb06-3f9b-4d85-9646-d29a7edf9b94")
+        assert.is_nil(err)
     end)
     
     it("upstream lookup from API", function()
         local res, err = lce_lookup(lookupConfig, lookupValue)
         
         assert(res == "https://proxy.aaronrenner.com/v1/anything")
+        assert.is_nil(err)
     end)
 end)

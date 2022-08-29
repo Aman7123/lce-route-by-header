@@ -1,6 +1,5 @@
 local helpers = require "spec.helpers"
 local PLUGIN_NAME = "lce-route-by-header"
-local cjson = require "cjson.safe"
 
 for _, strategy in helpers.each_strategy({"off", "postgres"}) do
   describe(PLUGIN_NAME .. ": (access) [#" .. strategy .. "]", function()
@@ -13,7 +12,7 @@ for _, strategy in helpers.each_strategy({"off", "postgres"}) do
       -- Inject a test route. No need to create a service, there is a default
       -- service which will echo the request.
       local route1 = bp.routes:insert({
-        paths = { 
+        paths = {
           "/negative-path",
           "/positive-path",
         },
@@ -69,21 +68,5 @@ for _, strategy in helpers.each_strategy({"off", "postgres"}) do
         assert(jsonBody["message"] == "[LCE] None of these keys [x-test] were found in the request")
       end)
     end)
-
-    -- describe("request", function()
-    --   it("contains key in header", function()
-    --     local r = client:get("/positive-path", {
-    --       headers = {
-    --         ["x-test"] = "a445b37e-9e8c-4aeb-843f-6ccc359fbea2"
-    --       }
-    --     })
-    --     -- validate that the request failed, response status 500
-    --     assert.response(r).has.status(200)
-    --     -- Assert the body is JSON and save JSON as table
-    --     local jsonBody = assert.response(r).has.jsonbody()
-    --     assert(jsonBody["id"] == 1)
-    --   end)
-    -- end)
-
   end)
 end
