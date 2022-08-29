@@ -14,3 +14,8 @@
 * [Activate](https://mockbin.org/bin/9c4b3646-8a07-4112-afb0-36729c3721cc)
 * [View](https://mockbin.org/bin/9c4b3646-8a07-4112-afb0-36729c3721cc/view)
 * [Log](https://mockbin.org/bin/9c4b3646-8a07-4112-afb0-36729c3721cc/log)
+
+## An example of a GET with ID = 3 (links to URL for id=1)
+* [Activate](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2)
+* [View](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2/view)
+* [Log](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2/log)
