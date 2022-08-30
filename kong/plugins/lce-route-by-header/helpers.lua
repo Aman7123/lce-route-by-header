@@ -33,6 +33,7 @@ function _M.parse_url(host_url)
   return parsed_url
 end
 
+-- Takes an array of strings and writes them as a CSV wrapped with '[' and ']'
 function _M.tbl_to_string(array)
   local str = "["
   for i, v in ipairs(array) do
@@ -43,6 +44,9 @@ function _M.tbl_to_string(array)
 end
 
 -- Custom implementation for integrating the Kong Cache 
+-- Main cache function
+-- Either does a lookup in memory cache or runs the lce-lookup function
+-- More information available here: https://docs.konghq.com/gateway/2.8.x/plugin-development/entities-cache/
 function _M.cache(config, key)
   local value, err = kong.cache:get(key, { ttl = config.cache_ttl }, lce_lookup, config, key)
   return value, err
@@ -83,6 +87,9 @@ function _M.loop_table(t, key)
   end
 end
 
+-- This function is a Kong custom helper to grab a request body
+-- Skip large bodies is mentioned:
+-- https://docs.konghq.com/gateway/2.8.x/reference/configuration/#nginx_http_client_body_buffer_size
 function _M.read_request_body(skip_large_bodies)
   ngx.req.read_body()
   local body = ngx.req.get_body_data()
@@ -104,6 +111,9 @@ function _M.read_request_body(skip_large_bodies)
   return body
 end
 
+-- This function combines paths
+-- This function knows to remove trailing slashes before combination
+-- In the output b is appended to a
 function _M.combine_paths(path_a, path_b)
   path_a = path_a or ""
   path_b = path_b or ""
@@ -128,6 +138,9 @@ function _M.combine_paths(path_a, path_b)
   return path_a .. "/" .. path_b
 end
 
+-- This is a combiner for query strings
+-- Kong will never return with an "&" at the beginning or end
+-- In the output b is appended to a
 function _M.combine_query_strings(query_a, query_b)
   query_a = query_a or ""
   query_b = query_b or ""

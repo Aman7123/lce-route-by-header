@@ -38,8 +38,10 @@ return {
           -- Run checks
           -- Pattern matching
           if value_matching_pattern then
-            if (not registry_api_url:find(value_matching_pattern)) and (not path_to_url:find(value_matching_pattern)) then
-              return false, "value_matching_pattern is set, the text charecters in this field are replaced in either registry_api_url or path_to_url with the value found in the request which matched a key_names. To disable pattern replacing nil out the value_matching_pattern field"
+            if type(value_matching_pattern) == "string" then
+              if (not registry_api_url:find(value_matching_pattern)) and (not path_to_url:find(value_matching_pattern)) then
+                return false, "value_matching_pattern is set, the text charecters in this field are replaced in either registry_api_url or path_to_url with the value found in the request which matched a key_names. To disable pattern replacing nil out the value_matching_pattern field"
+              end
             end
           end
           -- JSONPath

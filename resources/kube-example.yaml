@@ -1,0 +1,17 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: lce-route-by-header-example
+config: 
+  cache_ttl: 300
+  debug: true
+  error_response_status_code: 500
+  key_names:
+  - x-test
+  - x-mkbin
+  - x-custom-url
+  path_to_url: $.url
+  registry_api_url: https://mockbin.org/bin/%s
+  skip_large_bodies: false
+  value_matching_pattern: '%%s'
+plugin: lce-route-by-header
