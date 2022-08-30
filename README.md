@@ -3,7 +3,7 @@ LCE Route By Header
 * Experimental code in `develop` branch
 * Prerequisites: Lua knowledge / experience
 
-![network flow](resources/network-flow.png)
+<img src="resources/network-flow.png" alt="network flow" width=850 height=500 />
 
 This custom route by header plugin is used to build a custom service for the next network hop. The next network hop is obtained from a `GET By ID` to a registry API service. The URL is a configurable location inside the JSON response form the API registry service, can be set with `path_to_url` which is explained in more detail below. The URL should be in the format `<scheme>://<host>` (ex. `https://example.com`).
 
@@ -13,7 +13,7 @@ Configuration
 |---|---|---|---|
 | cache_ttl | ✅ | 300 | How long to keep the store registry URL in memory |
 | registry_api_url | ✅ |  | A URL to the registry API that returns upstream URLs |
-| value_matching_pattern |  | %%s | A special character that can be replaced in the `registry_api_url` or `path_to_url` |
+| value_matching_pattern |  | %%s | A special character that can be replaced in the `registry_api_url` or `path_to_url`. The value in this field is interpreted as a [Lua pattern](https://www.lua.org/pil/20.2.html) this means sometimes the value needs to be escaped as in the default example  |
 | key_names | ✅ |  | CSV of case insensitive strings that are matched to an HTTP request information in the order `headers -> query params -> body`. Body search only works if form-data or JSON |
 | path_to_url | ✅ |  | A [jq](https://github.com/hy05190134/lua-jsonpath) value to a URL in the registry response that is used as the upstream |
 | error_response_status_code | ✅ | 500 | The global response code used for all internal errors in the code |
@@ -37,6 +37,60 @@ Config Example
   "skip_large_bodies": false,
   "debug": true
 }
+```
+
+Internal Cache
+=================================
+Kong provides 3 [Admin API endpoints](https://docs.konghq.com/gateway/latest/reference/clustering/#interacting-with-the-cache-via-the-admin-api) for interacting with the internal cache, below here are 2 of the more important ones: 
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/cache/{cache_key}` | Where the cache key would be the value from the request we cached, the location id/location number |
+| `DELETE` | `/cache` | Purge cache |
+
+As an example here the [Kong Mockbin](https://mockbin.org/) website is used as the Registry API, the plugin configuration would be similar to the example above and would contain these values:
+```json
+{
+  "registry_api_url": "https://mockbin.org/bin/%s",
+  "value_matching_pattern": "%%s",
+  "key_names": [
+    "x-test"
+  ],
+  "path_to_url": "$.privateUrl"
+}
+```
+
+If an incoming request looked like this:
+```
+POST /api/v1/examples HTTP/1.1
+Host: example.com
+Content-Type: application/json
+x-test: fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad
+
+{"data": "eyJtZXNzYWdlIjogInRoaXMgaXMgZXhhbXBsZSBkYXRhIn0K"}
+```
+
+The cache key in this example is `fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad`. A lookup URL to the Registry is created like `https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad` and the response is:
+```json
+{
+  "id": "jsddfq1234asdf2z",
+  "createdDateTime": "2022-08-08T18:22:55.27889847",
+  "uploadedBy": "Aaron Renner <admin@aar.dev>",
+  "locationNumber": "1234",
+  "blockId": "AA",
+  "confluentId": "1",
+  "publicUrl": "https://proxy.lce.com/v1/anything",
+  "privateUrl": "https://10.0.24.13",
+  "mongoDBClusterMapping": {
+    "storeSpecific": "AppSettings_MongoConnectionString_StoreData_1",
+    "nonStoreSpecific": "AppSettings_MongoConnectionString_NonStoreData_1"
+  }
+}
+```
+
+The resulting cache would be a Key/Value pair of
+```
+fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad:https://10.0.24.13
 ```
 
 Installation

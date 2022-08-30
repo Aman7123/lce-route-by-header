@@ -19,3 +19,8 @@
 * [Activate](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2)
 * [View](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2/view)
 * [Log](https://mockbin.org/bin/a445b37e-9e8c-4aeb-843f-6ccc359fbea2/log)
+
+## Body data in LCE Example
+* [Activate](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad)
+* [View](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad/view)
+* [Log](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad/log)

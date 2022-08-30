@@ -4,7 +4,8 @@ local loop = require "kong.plugins.lce-route-by-header.helpers".loop_table
 local ngx = ngx
 
 return function(config, params, headers)
-  -- Validate input args
+  -- 
+  -- Getters/Setters for this function variables
   if (type(config) ~= "table") and (type(params) ~= "table") and (type(headers) ~= "table") then
     local a = "Invalid arguments, "
     local b = "arg#1 is ".. type(config) .. " "
@@ -15,13 +16,14 @@ return function(config, params, headers)
   end
   local debug = config.debug
   local keys = config.key_names
-  -- Debug
+  -- Debug log our input items
   if debug then
     ngx.log(ngx.INFO, "Keys: "..cjson.encode(keys))
     ngx.log(ngx.INFO, "Params: "..cjson.encode(params))
     ngx.log(ngx.INFO, "Headers: "..cjson.encode(headers))
   end
 
+  -- 
   -- Loop keys array
   for _, key in ipairs(keys) do
     -- Loop through headers object of k/v pairs and search for keys matching
@@ -42,6 +44,7 @@ return function(config, params, headers)
     end
   end
   
+  -- 
   -- This function should have already returned values
   return nil, "None of these keys "..tbl_to_string(keys).." were found in the request"
 end

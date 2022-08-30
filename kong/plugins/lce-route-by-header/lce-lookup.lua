@@ -4,7 +4,8 @@ local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
 local ngx = ngx
 
 return function(config, value)
-  -- Validate input args
+  -- 
+  -- Getters/Setters for this function variables
   if (type(config) ~= "table") and (type(value) ~= "string") then
     local a = "Invalid arguments, "
     local b = "arg#1 is ".. type(config) .. " and must be table "
@@ -12,26 +13,37 @@ return function(config, value)
     return nil, (a .. b .. c)
   end
   local debug = config.debug
-  -- Debug
+  -- Debug log our input items
   if debug then
     ngx.log(ngx.INFO, "Incoming value: "..value)
   end
-  -- Lookup store id in API
+
+  -- 
+  -- Lookup location id in registry API
+  --- Frst here are Getters/Setters
   local params = {
     method     = "GET",
     ssl_verify = false,
   }
   local httpc = http.new()
   httpc:set_timeout(config.upstream_timeout)
-  local url = config.registry_api_url:gsub((config.value_matching_pattern or ""), value, nil, true)
+  -- Utilize the value_matching_pattern from our schema
+  local url = config.registry_api_url
+  if (type(config.value_matching_pattern) == "string") then
+    url = config.registry_api_url:gsub(config.value_matching_pattern, value, nil, true)
+  end
+  -- If debug log our url in the console
   if debug then
     ngx.log(ngx.INFO, "Formatted fetch url: "..url)
   end
+  -- Perform the request
   local res, err = httpc:request_uri(url, params) -- Actually GETS url
-  -- Ensure response is safe
+  -- Capture errors from the request
   if not res then
     return nil, err
   end
+
+  -- 
   -- Parse and decode response body
   local apiResponse = cjson.decode(res.body)
   if (type(apiResponse) ~= "table") then
@@ -40,7 +52,10 @@ return function(config, value)
   if debug then
     ngx.log(ngx.INFO, "Found resonse body: "..res.body)
   end
-  -- Process jp lookup
+
+  -- 
+  -- Process jp lookup on response body
+  -- This proces utilizes path_to_url from our schema
   --- Perform jp search
   local serviceUrl = jp_value(apiResponse, config.path_to_url)
   if debug then
@@ -50,6 +65,8 @@ return function(config, value)
   if type(serviceUrl) ~= "string" then
     return nil, "Internal jsonpath parsing returned too many results"
   end
+
+  -- 
   -- Complete
   return serviceUrl, nil
 end
