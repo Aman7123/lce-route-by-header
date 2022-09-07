@@ -26,7 +26,6 @@ return function(config, value)
     ssl_verify = false,
   }
   local httpc = http.new()
-  httpc:set_timeout(config.upstream_timeout)
   -- Utilize the value_matching_pattern from our schema
   local url = config.registry_api_url
   if (type(config.value_matching_pattern) == "string") then
@@ -42,10 +41,13 @@ return function(config, value)
   if not res then
     return nil, err
   end
-
-  -- 
-  -- Parse and decode response body
+  -- Validate response status code
+  if res.status ~= 200 then
+    return nil, "Registry lookup returned code \'"..res.status.."\' with body \'"..res.body.."\'"
+  end
+  -- Decode response into table
   local apiResponse = cjson.decode(res.body)
+  -- Parse and decode response body
   if (type(apiResponse) ~= "table") then
     return nil, "Response from API was \'"..res.body.."\' which could not parse to JSON"
   end

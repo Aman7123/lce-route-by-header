@@ -22,6 +22,10 @@ local lookupConfig = {
     ["value_matching_pattern"] = "%%s",
     ["path_to_url"] = "$.url",
 }
+local notFoundAPIConfig = {
+    ["registry_api_url"] = "https://mockbin.org/bin/5cab99f3-eb73-43f5-9da0-f0e0c1d0b5b8",
+    ["path_to_url"] = "$.url",
+}
 
 describe(PLUGIN_NAME .. ": (LCE functions)", function()
     it("parse value - headers first", function()
@@ -43,5 +47,12 @@ describe(PLUGIN_NAME .. ": (LCE functions)", function()
         
         assert(res == "https://proxy.aaronrenner.com/v1/anything")
         assert.is_nil(err)
+    end)
+
+    it("catch error from lookup API", function()
+        local res, err = lce_lookup(notFoundAPIConfig, parserBody, {})
+        
+        assert(type(err) == "string")
+        assert.is_nil(res)
     end)
 end)

@@ -13,6 +13,8 @@ LCE_RouteByHeader.PRIORITY = 751
 
 -- runs in the 'access_by_lua_block'
 function LCE_RouteByHeader:access(config)
+  -- Plugin total execution time setters
+  local clockStart = os.clock()
   --
   -- Start of LCE Location ID Lookup
   -- Getters/Setters for processing
@@ -63,6 +65,10 @@ function LCE_RouteByHeader:access(config)
   kong.service.request.set_path(upstream_path)
   kong.service.request.set_raw_query(upstream_query)
   kong.service.set_target(splitUrl.host, splitUrl.port)
+  -- Final debug log
+  if debug then
+    ngx.log(ngx.INFO, "Plugin execution took "..os.clock()-clockStart.." CPU seconds")
+  end
 end
 
 -- return our plugin object
