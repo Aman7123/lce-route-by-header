@@ -32,7 +32,7 @@ return function(config, params, headers)
       if debug then
         ngx.log(ngx.INFO, "Found key value: "..hVal)
       end
-      return hVal
+      return tostring(hVal)
     end
     -- Loop through params which is the body and/or query params
     local bVal = loop(params, key)
@@ -40,7 +40,7 @@ return function(config, params, headers)
       if debug then
         ngx.log(ngx.INFO, "Found key value: "..bVal)
       end
-      return bVal
+      return tostring(bVal)
     end
   end
   

@@ -10,6 +10,10 @@ local parserHeaders = {
     ["test-header"] = "test-value",
     ["x-lce-key"] = "value"
 }
+local parserHeadersIsNumber = {
+    ["test-header"] = "test-value",
+    ["x-lce-key"] = 1010001
+}
 local parserBody = {
     ["id"] = "1",
     ["x-lce-key"] = "0d7ecb06-3f9b-4d85-9646-d29a7edf9b94"
@@ -30,8 +34,13 @@ local notFoundAPIConfig = {
 describe(PLUGIN_NAME .. ": (LCE functions)", function()
     it("parse value - headers first", function()
         local res, err = lce_parser(parserConfig, parserBody, parserHeaders)
-        
         assert(res == "value")
+        assert.is_nil(err)
+    end)
+    it("parse value - header is number", function()
+        local res, err = lce_parser(parserConfig, {}, parserHeadersIsNumber)
+        assert(res == "1010001")
+        assert(type(res) == "string")
         assert.is_nil(err)
     end)
 
