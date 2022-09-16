@@ -14,7 +14,7 @@ local LCE_RouteByHeader = {}
 LCE_RouteByHeader.PRIORITY = 751
 
 function LCE_RouteByHeader:init_worker()
-  local message, err = ngx_timer_at(0, lce_init)
+  local _, err = ngx_timer_at(0, lce_init)
   if err then
     kong.log.err("[LCE] Error performing precache: ", err)
   end
