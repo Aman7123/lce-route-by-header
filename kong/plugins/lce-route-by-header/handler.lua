@@ -4,12 +4,21 @@ local lce_cache = require "kong.plugins.lce-route-by-header.helpers".cache
 local combine_paths = require "kong.plugins.lce-route-by-header.helpers".combine_paths
 local combine_querys = require "kong.plugins.lce-route-by-header.helpers".combine_query_strings
 local lce_parser = require "kong.plugins.lce-route-by-header.lce-parser"
+local lce_init = require "kong.plugins.lce-route-by-header.init-worker"
 local kong = kong
 local ngx = ngx
+local ngx_timer_at = ngx.timer.at
 
 -- Required Kong values
 local LCE_RouteByHeader = {}
 LCE_RouteByHeader.PRIORITY = 751
+
+function LCE_RouteByHeader:init_worker()
+  local _, err = ngx_timer_at(0, lce_init)
+  if err then
+    kong.log.err("[LCE] Error performing precache: ", err)
+  end
+end
 
 -- runs in the 'access_by_lua_block'
 function LCE_RouteByHeader:access(config)
