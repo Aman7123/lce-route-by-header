@@ -16,7 +16,7 @@ jobs:
         kongVersion:
         - "2.7.x"
         - "2.8.x"
-        - "3.0.x"
+        - "2.8.1.x"
 
     steps:
     - uses: actions/checkout@v3
