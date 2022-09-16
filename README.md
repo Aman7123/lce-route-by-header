@@ -2,6 +2,7 @@ LCE Route By Header
 ====================
 * Experimental code in `develop` branch
 * Prerequisites: Lua knowledge / experience
+* Kong version: 3.0.0
 
 <img src="resources/network-flow.png" alt="network flow" width=850 height=500 />
 
@@ -25,8 +26,8 @@ Plugin Configuration
 | key_names | ✅ |  | CSV of case insensitive strings that are matched to an HTTP request information in the order `headers -> query params -> body`. Body search only works if form-data or JSON |
 | path_to_url | ✅ |  | A [jp](https://github.com/hy05190134/lua-jsonpath) value to a URL in the registry response that is used as the upstream |
 | error_response_status_code | ✅ | 500 | The global response code used for all internal errors in the code |
-| skip_large_bodies |  | false | An optional value that defines whether Kong should send large bodies that are buffered to disk. Note that enabling this option will have an impact on system memory depending on the number of requests simultaneously in flight at any given point in time and on the maximum size of each request. Also this option blocks all requests being handled by the nginx workers. That could be tens of thousands of other transactions that are not being processed. For small I/O operations, such a delay would generally not be problematic. In cases where the body size is in the order of MB, such a delay would cause notable interruptions in request processing. Given all of the potential downsides resulting from enabling this option, consider increasing the [client_body_buffer_size](https://docs.konghq.com/gateway/2.8.x/reference/configuration/#nginx_http_client_body_buffer_size) value instead |
-| debug |  | true | Creates logs in the proxy that explains processing flow using the INFO [log level](https://docs.konghq.com/gateway/2.8.x/reference/configuration/#log_level) |
+| skip_large_bodies |  | false | An optional value that defines whether Kong should send large bodies that are buffered to disk. Note that enabling this option will have an impact on system memory depending on the number of requests simultaneously in flight at any given point in time and on the maximum size of each request. Also this option blocks all requests being handled by the nginx workers. That could be tens of thousands of other transactions that are not being processed. For small I/O operations, such a delay would generally not be problematic. In cases where the body size is in the order of MB, such a delay would cause notable interruptions in request processing. Given all of the potential downsides resulting from enabling this option, consider increasing the [client_body_buffer_size](https://docs.konghq.com/gateway/latest/reference/configuration/#nginx_http_client_body_buffer_size) value instead |
+| debug |  | true | Creates logs in the proxy that explains processing flow using the INFO [log level](https://docs.konghq.com/gateway/latest/reference/configuration/#log_level) |
 
 Plugin Config Example
 =================================

@@ -1,6 +1,6 @@
 # Choose a default image
 # Check https://hub.docker.com/r/kong/kong-gateway/tags for latest versions
-FROM kong/kong-gateway:2.8.1.4-alpine
+FROM kong/kong-gateway:3.0.0.0-alpine
 
 
 # Establish variables for Kong and hardset our plugin
