@@ -30,7 +30,7 @@ return function(config, params, headers)
     local hVal = loop(headers, key)
     if hVal then
       if debug then
-        ngx.log(ngx.INFO, "Found key value: "..hVal)
+        ngx.log(ngx.INFO, "Found key value in header: "..hVal)
       end
       return tostring(hVal)
     end
@@ -38,7 +38,7 @@ return function(config, params, headers)
     local bVal = loop(params, key)
     if bVal then
       if debug then
-        ngx.log(ngx.INFO, "Found key value: "..bVal)
+        ngx.log(ngx.INFO, "Found key value in body/args: "..bVal)
       end
       return tostring(bVal)
     end
