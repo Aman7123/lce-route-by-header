@@ -13,7 +13,7 @@ Environment Configuration
 =================================
 | ENV | Example | Description |
 |---|---|---|
-| KONG_UNTRUSTED_LUA_SANDBOX_ENVIRONMENT | LCE_REGISTRY_URL=https://mockbin.org/bin,<br />LCE_PATH_TO_ID=`$.id`,<br />LCE_PATH_TO_URL=`$.url`,<br />LCE_CACHE_TTL=259200 | This is a CSV of K=V pairs.<br />* REGISTRY_URL is the GET All endpoint<br />* PATH_TO_ID is a jsonpath to the locatioId/locationNumber in the request<br />* PATH_TO_URL is jsonpath to the string containing the next jump<br />* CACHE_TTL is in seconds how long to keep the k/v in memory |
+| KONG_UNTRUSTED_LUA_SANDBOX_ENVIRONMENT | LCE_REGISTRY_URL=https://mockbin.org/bin,<br />LCE_PATH_TO_ID=`$.id`,<br />LCE_PATH_TO_URL=`$.url`,<br />LCE_CACHE_TTL=259200,<br />LCE_DEBUG=1 | This is a CSV of K=V pairs.<br />* LCE_REGISTRY_URL is the GET All endpoint<br />* LCE_PATH_TO_ID is a jsonpath to the locationId/locationNumber in the request<br />* LCE_PATH_TO_URL is jsonpath to the string containing the next jump<br />* LCE_CACHE_TTL is in seconds how long to keep the k/v in memory<br />* LCE_DEBUG is an int 1=true 0=false |
 
 Plugin Configuration
 =================================
@@ -105,7 +105,7 @@ The cache key in this example is `fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad`. A looku
 
 The resulting cache would be a Key/Value pair of
 ```
-fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad:https://10.0.24.13
+fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad=https://10.0.24.13
 ```
 
 Installation

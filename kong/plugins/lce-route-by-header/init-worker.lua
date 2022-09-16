@@ -4,7 +4,10 @@ local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
 local kong = kong
 
 return function()
-  local registry_api_url, path_to_id, path_to_url, cache_ttl
+
+  -- 
+  -- Initial variable setup and parsing from env
+  local registry_api_url, path_to_id, path_to_url, cache_ttl, debug
   local envvar = kong.configuration.untrusted_lua_sandbox_environment
 
   if envvar then
@@ -17,14 +20,18 @@ return function()
         path_to_url = v:match("PATH_TO_URL=(.*)")
       elseif v:match("LCE_CACHE_TTL=") then
         cache_ttl = v:match("LCE_CACHE_TTL=(.*)")
+      elseif v:match("LCE_DEBUG=") then
+        debug = tonumber(v:match("LCE_DEBUG=(.*)"))
       end
     end
   end
 
   -- Debug these envvars
-  kong.log.info("URL to registry: "..tostring(registry_api_url))
-  kong.log.info("JSONPath to ID: "..tostring(path_to_id))
-  kong.log.info("JSONPath to URL: "..tostring(path_to_url))
+  if debug == 1 then
+    kong.log.info("URL to registry: "..tostring(registry_api_url))
+    kong.log.info("JSONPath to ID: "..tostring(path_to_id))
+    kong.log.info("JSONPath to URL: "..tostring(path_to_url))
+  end
 
   -- Ensure the path to an ID was provided or this will not parse
   if registry_api_url and path_to_id and path_to_url and cache_ttl then
@@ -40,10 +47,9 @@ return function()
     local httpc = http.new()
     -- Perform the request
     local res, err = httpc:request_uri(registry_api_url, params)
-    print(cjson.encode(res.body))
     -- Capture errors from the request
     if not res then
-      return nil, err
+      kong.log.err("Error when making registry api lookup: "..err)
     end
 
     -- 
@@ -55,19 +61,28 @@ return function()
       local serviceUrl, err2 = jp_value(item, path_to_url)
       -- Check for errors
       if err1 or err2 then
-        kong.log.err("Error parsing registry response: "..err1 or err2)
+        kong.log.err("Error parsing registry response: "..(err1 or err2))
       end
       -- Rewrite key to string
       locationId = tostring(locationId)
+      -- Invalidate existing cache entry
+      kong.cache:invalidate(locationId)
       -- Enter into cache
       local _, err = 
         kong.cache:get(locationId, { ttl = tonumber(cache_ttl) }, 
-          function(a)
-            print("setting: "..a) 
+          function(a, debug)
+            -- Inner callback function debug
+            if debug == 1 then
+              kong.log.info("Precache "..a.." completed")
+            end
+            -- Return
             return a 
-          end, serviceUrl)
+          end, serviceUrl, debug)
       if err then
-        return nil, err
+        kong.log.err("Error while saving entry in cache: "..err)
+      end
+      if debug == 1 then
+        kong.log.info("Precache entry: "..locationId.." = "..serviceUrl)
       end
     end
   else

@@ -12,6 +12,7 @@ local ngx_timer_at = ngx.timer.at
 -- Required Kong values
 local LCE_RouteByHeader = {}
 LCE_RouteByHeader.PRIORITY = 751
+LCE_RouteByHeader.VERSION = "1.0.0"
 
 function LCE_RouteByHeader:init_worker()
   local _, err = ngx_timer_at(0, lce_init)
