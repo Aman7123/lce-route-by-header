@@ -8,7 +8,7 @@ LCE Route By Header
 
 This custom route by header plugin is used to build a custom service for the next network hop. The next network hop is obtained from a `GET By ID` to a registry API service. The URL is a configurable location inside the JSON response form the API registry service, can be set with `path_to_url` which is explained in more detail below. The URL should be in the format `<scheme>://<host>` (ex. `https://example.com`).
 
-A new feature in this plugin is its ability to use a `GET All` endpoint for obtaining an array of registry block objects in the registry api. To take advantage of this feature you MUST have the `Environment Configuration` variable applied and configured correctly. This feature is known as "pre-cache" and is ran by default on initial Kong worker startup using the [init_worker](https://docs.konghq.com/gateway/2.8.x/plugin-development/custom-logic/) phase AND can be populated by using the special Admin API endpoint explained in `Rebuilding All Internal Cache` below.
+A new feature in this plugin is its ability to use a `GET All` endpoint for obtaining an array of registry block objects in the registry api. To take advantage of this feature you MUST have the `Environment Configuration` variable applied and configured correctly. This feature is known as "pre-cache" and is ran by default on initial Kong worker startup using the [init_worker](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/) phase AND can be populated by using the special Admin API endpoint explained in `Rebuilding All Internal Cache` below.
 
 Environment Configuration
 =================================
