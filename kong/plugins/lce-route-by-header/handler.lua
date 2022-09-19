@@ -14,10 +14,14 @@ local LCE_RouteByHeader = {}
 LCE_RouteByHeader.PRIORITY = 751
 LCE_RouteByHeader.VERSION = "1.0.0"
 
+-- runs in the 'init_worker_by_lua_block'
 function LCE_RouteByHeader:init_worker()
-  local _, err = ngx_timer_at(0, lce_init)
-  if err then
-    kong.log.err("[LCE] Error performing precache: ", err)
+  local success = ngx.shared.kong_locks:add("lce_precache", true, 60)
+  if success then
+    local _, err = ngx_timer_at(0, lce_init)
+    if err then
+      kong.log.err("[LCE] Error performing precache: ", err)
+    end
   end
 end
 
@@ -25,6 +29,7 @@ end
 function LCE_RouteByHeader:access(config)
   -- Plugin total execution time setters
   local clockStart = os.clock()
+  
   --
   -- Start of LCE Location ID Lookup
   -- Getters/Setters for processing
