@@ -167,7 +167,6 @@ function _M.jitter_ttl(ttl, max_hours_of_jitter)
   else
     return ttl + (jitter * hourInSeconds)
   end
-  return ttl
 end
 
 return _M

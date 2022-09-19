@@ -18,7 +18,7 @@ LCE_RouteByHeader.VERSION = "1.0.0"
 -- ngx.shared.DICT.add
 -- svae for 60 seconds
 function LCE_RouteByHeader:init_worker()
-  local success, err = ngx.shared.kong_locks:add("lce_precache", true, 60)
+  local success = ngx.shared.kong_locks:add("lce_precache", true, 60)
   if success then
     local _, err = ngx_timer_at(0, lce_init)
     if err then

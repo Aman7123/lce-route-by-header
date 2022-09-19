@@ -65,7 +65,7 @@ return function()
       -- Invalidate existing cache entry
       kong.cache:invalidate(locationId)
       -- Calculate unique record ttl with jitter
-      local newTtl = jitter_ttl(cache_ttl, hours_of_jitter)\
+      local newTtl = jitter_ttl(cache_ttl, hours_of_jitter)
       -- Enter into cache
       local _, err = 
         kong.cache:get(locationId, { ttl = newTtl }, 
