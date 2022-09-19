@@ -1,30 +1,27 @@
 local cjson = require "cjson.safe"
 local http = require "resty.http"
 local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
+local jitter_ttl = require "kong.plugins.lce-route-by-header.helpers".jitter_ttl
+
+--  ENVAR
+local LCE_REGISTRY_URL = os.getenv("LCE_REGISTRY_URL")
+local LCE_TO_IP = os.getenv("LCE_PATH_TO_ID")
+local LCE_TO_URL = os.getenv("LCE_PATH_TO_URL")
+local LCE_CACHE = os.getenv("LCE_CACHE_TTL")
+local LCE_HRS_OF_JITTER = os.getenv("LCE_JITTER")
+local LCE_DEBUG = os.getenv("LCE_DEBUG")
+
 local kong = kong
 
 return function()
-
   -- 
   -- Initial variable setup and parsing from env
-  local registry_api_url, path_to_id, path_to_url, cache_ttl, debug
-  local envvar = kong.configuration.untrusted_lua_sandbox_environment
-
-  if envvar then
-    for _, v in ipairs(envvar) do
-      if v:match("LCE_REGISTRY_URL=") then
-        registry_api_url = v:match("LCE_REGISTRY_URL=(.*)")
-      elseif v:match("PATH_TO_ID=") then
-        path_to_id = v:match("PATH_TO_ID=(.*)")
-      elseif v:match("PATH_TO_URL=") then
-        path_to_url = v:match("PATH_TO_URL=(.*)")
-      elseif v:match("LCE_CACHE_TTL=") then
-        cache_ttl = v:match("LCE_CACHE_TTL=(.*)")
-      elseif v:match("LCE_DEBUG=") then
-        debug = tonumber(v:match("LCE_DEBUG=(.*)"))
-      end
-    end
-  end
+  local registry_api_url = LCE_REGISTRY_URL
+  local path_to_id = LCE_TO_IP
+  local path_to_url = LCE_TO_URL
+  local cache_ttl = LCE_CACHE
+  local hours_of_jitter = tonumber(LCE_HRS_OF_JITTER) or 12
+  local debug = tonumber(LCE_DEBUG) or 0
 
   -- Debug these envvars
   if debug == 1 then
@@ -67,9 +64,11 @@ return function()
       locationId = tostring(locationId)
       -- Invalidate existing cache entry
       kong.cache:invalidate(locationId)
+      -- Calculate unique record ttl with jitter
+      local newTtl = jitter_ttl(cache_ttl, hours_of_jitter)\
       -- Enter into cache
       local _, err = 
-        kong.cache:get(locationId, { ttl = tonumber(cache_ttl) }, 
+        kong.cache:get(locationId, { ttl = newTtl }, 
           function(a, debug)
             -- Inner callback function debug
             if debug == 1 then

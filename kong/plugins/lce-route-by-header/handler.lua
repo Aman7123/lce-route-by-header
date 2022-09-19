@@ -14,10 +14,16 @@ local LCE_RouteByHeader = {}
 LCE_RouteByHeader.PRIORITY = 751
 LCE_RouteByHeader.VERSION = "1.0.0"
 
+-- 
+-- ngx.shared.DICT.add
+-- svae for 60 seconds
 function LCE_RouteByHeader:init_worker()
-  local _, err = ngx_timer_at(0, lce_init)
-  if err then
-    kong.log.err("[LCE] Error performing precache: ", err)
+  local success, err = ngx.shared.kong_locks:add("lce_precache", true, 60)
+  if success then
+    local _, err = ngx_timer_at(0, lce_init)
+    if err then
+      kong.log.err("[LCE] Error performing precache: ", err)
+    end
   end
 end
 

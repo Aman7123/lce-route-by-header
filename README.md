@@ -8,13 +8,18 @@ LCE Route By Header
 
 This custom route by header plugin is used to build a custom service for the next network hop. The next network hop is obtained from a `GET By ID` to a registry API service. The URL is a configurable location inside the JSON response form the API registry service, can be set with `path_to_url` which is explained in more detail below. The URL should be in the format `<scheme>://<host>` (ex. `https://example.com`).
 
-A new feature in this plugin is its ability to use a `GET All` endpoint for obtaining an array of registry block objects in the registry api. To take advantage of this feature you MUST have the `Environment Configuration` variable applied and configured correctly. This feature is known as "pre-cache" and is ran by default on initial Kong worker startup using the [init_worker](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/) phase AND can be populated by using the special Admin API endpoint explained in `Rebuilding All Internal Cache` below.
+A new feature in this plugin is its ability to use a `GET All` endpoint for obtaining an array of registry block objects in the registry api. To take advantage of this feature you MUST have the `Environment Configuration` variable applied and configured correctly. This feature is known as "pre-cache" and is ran by default on initial Kong worker startup using the [init_worker](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/).
 
 Environment Configuration
 =================================
 | ENV | Example | Description |
 |---|---|---|
-| KONG_UNTRUSTED_LUA_SANDBOX_ENVIRONMENT | LCE_REGISTRY_URL=https://mockbin.org/bin,<br />LCE_PATH_TO_ID=`$.id`,<br />LCE_PATH_TO_URL=`$.url`,<br />LCE_CACHE_TTL=259200,<br />LCE_DEBUG=1 | This is a CSV of K=V pairs.<br />* LCE_REGISTRY_URL is the GET All endpoint<br />* LCE_PATH_TO_ID is a jsonpath to the locationId/locationNumber in the request<br />* LCE_PATH_TO_URL is jsonpath to the string containing the next jump<br />* LCE_CACHE_TTL is in seconds how long to keep the k/v in memory<br />* LCE_DEBUG is an int 1=true 0=false |
+| LCE_REGISTRY_URL | https://mockbin.org/bin | This is the URL that leads to a GET All |
+| LCE_PATH_TO_ID | $.id | The [jp](https://github.com/hy05190134/lua-jsonpath) to the locationNumber |
+| LCE_PATH_TO_URL | $.url | The [jp](https://github.com/hy05190134/lua-jsonpath) to the upstream URL |
+| LCE_CACHE_TTL | 259200 | The time in seconds to keep the key:value pairs |
+| LCE_JITTER | 12 | The hours to jitter the TTL for each record by |
+| LCE_DEBUG | 1 | 0=false / 1=true for use in init_worker precache |
 
 Plugin Configuration
 =================================
@@ -46,13 +51,6 @@ Plugin Config Example
   "skip_large_bodies": false,
   "debug": true
 }
-```
-
-Rebuilding All Internal Cache
-=================================
-This plugin includes an additional Admin API endpoint for running the pre-cache function.
-```
-/precache (POST)
 ```
 
 Managing Internal Cache
