@@ -8,7 +8,7 @@ local lce_init = require "kong.plugins.lce-route-by-header.lce-precache"
 local kong = kong
 local ngx = ngx
 local log = ngx.log
-local INFO = INFO
+local INFO = ngx.INFO
 local ERR = ngx.ERR
 local ngx_timer_at = ngx.timer.at
 
