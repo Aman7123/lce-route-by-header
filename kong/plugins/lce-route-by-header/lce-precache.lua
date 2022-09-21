@@ -2,6 +2,7 @@ local cjson = require "cjson.safe"
 local http = require "resty.http"
 local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
 local jitter_ttl = require "kong.plugins.lce-route-by-header.helpers".jitter_ttl
+local kong = kong
 
 --  ENVAR
 local LCE_REGISTRY_URL = os.getenv("LCE_REGISTRY_URL")
@@ -11,11 +12,10 @@ local LCE_CACHE = os.getenv("LCE_CACHE_TTL")
 local LCE_HRS_OF_JITTER = os.getenv("LCE_JITTER")
 local LCE_DEBUG = os.getenv("LCE_DEBUG")
 
-local kong = kong
-
 return function()
   -- 
   -- Initial variable setup and parsing from env
+  local node_role = kong.configuration.role
   local registry_api_url = LCE_REGISTRY_URL
   local path_to_id = LCE_TO_IP
   local path_to_url = LCE_TO_URL
@@ -31,8 +31,9 @@ return function()
   end
 
   -- Ensure the path to an ID was provided or this will not parse
-  if registry_api_url and path_to_id and path_to_url and cache_ttl then
-    kong.log.info("Doing precache lookup")
+  local isOnProperNode = (node_role == "data_plane" or node_role == "traditional")
+  if registry_api_url and path_to_id and path_to_url and cache_ttl and isOnProperNode then
+    kong.log.info("LCE doing precache lookup")
 
     -- 
     -- Lookup location id in registry API
@@ -46,7 +47,7 @@ return function()
     local res, err = httpc:request_uri(registry_api_url, params)
     -- Capture errors from the request
     if not res then
-      kong.log.err("Error when making registry api lookup: "..err)
+      kong.log.err("LCE error when making registry api lookup: "..err)
     end
 
     -- 
@@ -58,7 +59,7 @@ return function()
       local serviceUrl, err2 = jp_value(item, path_to_url)
       -- Check for errors
       if err1 or err2 then
-        kong.log.err("Error parsing registry response: "..(err1 or err2))
+        kong.log.err("LCE error parsing registry response: "..(err1 or err2))
       end
       -- Rewrite key to string
       locationId = tostring(locationId)
@@ -69,22 +70,22 @@ return function()
       -- Enter into cache
       local _, err = 
         kong.cache:get(locationId, { ttl = newTtl }, 
-          function(a, debug)
-            -- Inner callback function debug
-            if debug == 1 then
-              kong.log.info("Precache "..a.." completed")
-            end
+          function(a)
             -- Return
             return a 
-          end, serviceUrl, debug)
+          end, serviceUrl)
       if err then
-        kong.log.err("Error while saving entry in cache: "..err)
+        kong.log.err("LCE error while saving entry in cache: "..err)
       end
       if debug == 1 then
-        kong.log.info("Precache entry: "..locationId.." = "..serviceUrl)
+        kong.log.info("LCE precache entry: "..locationId.." = "..serviceUrl.." with a ttl of "..newTtl)
       end
     end
   else
-    kong.log.info("Not all values provided to perform precache, needed LCE_REGISTRY_URL, PATH_TO_ID, PATH_TO_URL, LCE_CACHE_TTL")
+    if isOnProperNode then
+      kong.log.info("LCE not running precache on control plane")
+    else
+      kong.log.info("LCE not all values provided to perform precache, needed LCE_REGISTRY_URL, PATH_TO_ID, PATH_TO_URL, LCE_CACHE_TTL")
+    end
   end
 end

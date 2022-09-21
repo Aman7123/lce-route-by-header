@@ -154,11 +154,8 @@ function _M.combine_query_strings(query_a, query_b)
 end
 
 function _M.jitter_ttl(ttl, max_hours_of_jitter)
-  math.randomseed(os.time())
   -- Calculate jitter subtraction or addition
   local operation = math.random(0, 1)
-  -- Reset the seed for each request
-  math.randomseed(os.time())
   -- Calculate individule cache jitter
   local jitter = math.random(0, max_hours_of_jitter)
   local hourInSeconds = 3600

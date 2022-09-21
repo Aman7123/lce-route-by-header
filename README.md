@@ -18,7 +18,7 @@ Environment Configuration
 | LCE_PATH_TO_ID | $.id | The [jp](https://github.com/hy05190134/lua-jsonpath) to the locationNumber |
 | LCE_PATH_TO_URL | $.url | The [jp](https://github.com/hy05190134/lua-jsonpath) to the upstream URL |
 | LCE_CACHE_TTL | 259200 | The time in seconds to keep the key:value pairs |
-| LCE_JITTER | 12 | The hours to jitter the TTL for each record by |
+| LCE_JITTER | 12 | (default 12) The hours to jitter the TTL for each record by |
 | LCE_DEBUG | 1 | 0=false / 1=true for use in init_worker precache |
 
 Plugin Configuration

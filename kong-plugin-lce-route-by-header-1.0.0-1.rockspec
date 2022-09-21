@@ -17,6 +17,6 @@ build = {
     ["kong.plugins.lce-route-by-header.lce-parser"] = "kong/plugins/lce-route-by-header/lce-parser.lua",
     ["kong.plugins.lce-route-by-header.jsonpath"] = "kong/plugins/lce-route-by-header/jsonpath.lua",
     ["kong.plugins.lce-route-by-header.helpers"] = "kong/plugins/lce-route-by-header/helpers.lua",
-    ["kong.plugins.lce-route-by-header.init-worker"] = "kong/plugins/lce-route-by-header/init-worker.lua",
+    ["kong.plugins.lce-route-by-header.lce-precache"] = "kong/plugins/lce-route-by-header/lce-precache.lua",
   }
 }
