@@ -4,9 +4,10 @@ local lce_cache = require "kong.plugins.lce-route-by-header.helpers".cache
 local combine_paths = require "kong.plugins.lce-route-by-header.helpers".combine_paths
 local combine_querys = require "kong.plugins.lce-route-by-header.helpers".combine_query_strings
 local lce_parser = require "kong.plugins.lce-route-by-header.lce-parser"
-local lce_init = require "kong.plugins.lce-route-by-header.init-worker"
+local lce_init = require "kong.plugins.lce-route-by-header.lce-precache"
 local kong = kong
 local ngx = ngx
+local log = ngx.log
 local ngx_timer_at = ngx.timer.at
 
 -- Required Kong values
@@ -16,11 +17,16 @@ LCE_RouteByHeader.VERSION = "1.0.0"
 
 -- runs in the 'init_worker_by_lua_block'
 function LCE_RouteByHeader:init_worker()
+  -- 
+  -- LCE Cold Start Pre Cache
+  -- This below varibale is a lock to ensure only a single worker does the precache per node
   local success = ngx.shared.kong_locks:add("lce_precache", true, 60)
+  -- Success is true if the lock was created, false if it already existed
   if success then
+    -- Init the actual logic to fetch and save cache
     local _, err = ngx_timer_at(0, lce_init)
     if err then
-      kong.log.err("[LCE] Error performing precache: ", err)
+      log(ERR, "[LCE] Error performing precache: "..err)
     end
   end
 end
@@ -44,8 +50,8 @@ function LCE_RouteByHeader:access(config)
     kong.response.exit(config.error_response_status_code, { message = "[LCE] " .. err })
   end
   if debug then
-    ngx.log(ngx.INFO, "Registry value from request  "..registryValue)
-    ngx.log(ngx.INFO, "Parsing took "..os.clock()-parsingClockStart.." CPU seconds")
+    log(ngx.INFO, "Registry value from request  "..registryValue)
+    log(ngx.INFO, "Parsing took "..os.clock()-parsingClockStart.." CPU seconds")
   end
 
   -- 
@@ -59,8 +65,8 @@ function LCE_RouteByHeader:access(config)
     kong.response.exit(config.error_response_status_code, { message = "[LCE] " .. err })
   end
   if debug then
-    ngx.log(ngx.INFO, "Route from registry "..upstreamUrl)
-    ngx.log(ngx.INFO, "Lookup took "..os.clock()-lookupClockStart.." CPU seconds")
+    log(ngx.INFO, "Route from registry "..upstreamUrl)
+    log(ngx.INFO, "Lookup took "..os.clock()-lookupClockStart.." CPU seconds")
   end
 
   --
@@ -71,10 +77,10 @@ function LCE_RouteByHeader:access(config)
   local upstream_path = combine_paths(splitUrl.path, kong.request.get_path())
   -- Error and debugging on this lookup
   if debug then
-    ngx.log(ngx.INFO, "Path ["..tostring(splitUrl.path).."] + ["..kong.request.get_path().."] = "..(upstream_path))
-    ngx.log(ngx.INFO, "Query ["..tostring(splitUrl.query).."] + ["..kong.request.get_raw_query().."] = "..(upstream_query))
-    ngx.log(ngx.INFO, "Host: "..(splitUrl.host))
-    ngx.log(ngx.INFO, "Port: "..tostring(splitUrl.port))
+    log(ngx.INFO, "Path ["..tostring(splitUrl.path).."] + ["..kong.request.get_path().."] = "..(upstream_path))
+    log(ngx.INFO, "Query ["..tostring(splitUrl.query).."] + ["..kong.request.get_raw_query().."] = "..(upstream_query))
+    log(ngx.INFO, "Host: "..(splitUrl.host))
+    log(ngx.INFO, "Port: "..tostring(splitUrl.port))
   end
   -- Build the new Kong Service
   kong.service.request.set_path(upstream_path)
@@ -82,7 +88,7 @@ function LCE_RouteByHeader:access(config)
   kong.service.set_target(splitUrl.host, splitUrl.port)
   -- Final debug log
   if debug then
-    ngx.log(ngx.INFO, "Plugin execution took "..os.clock()-clockStart.." CPU seconds")
+    log(ngx.INFO, "Plugin execution took "..os.clock()-clockStart.." CPU seconds")
   end
 end
 

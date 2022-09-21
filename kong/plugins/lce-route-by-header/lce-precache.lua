@@ -70,19 +70,15 @@ return function()
       -- Enter into cache
       local _, err = 
         kong.cache:get(locationId, { ttl = newTtl }, 
-          function(a, debug)
-            -- Inner callback function debug
-            if debug == 1 then
-              kong.log.info("LCE precache "..a.." completed")
-            end
+          function(a)
             -- Return
             return a 
-          end, serviceUrl, debug)
+          end, serviceUrl)
       if err then
         kong.log.err("LCE error while saving entry in cache: "..err)
       end
       if debug == 1 then
-        kong.log.info("LCE precache entry: "..locationId.." = "..serviceUrl)
+        kong.log.info("LCE precache entry: "..locationId.." = "..serviceUrl.." with a ttl of "..newTtl)
       end
     end
   else
