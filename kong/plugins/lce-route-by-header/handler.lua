@@ -8,6 +8,8 @@ local lce_init = require "kong.plugins.lce-route-by-header.lce-precache"
 local kong = kong
 local ngx = ngx
 local log = ngx.log
+local INFO = INFO
+local ERR = ngx.ERR
 local ngx_timer_at = ngx.timer.at
 
 -- Required Kong values
@@ -50,8 +52,8 @@ function LCE_RouteByHeader:access(config)
     kong.response.exit(config.error_response_status_code, { message = "[LCE] " .. err })
   end
   if debug then
-    log(ngx.INFO, "Registry value from request  "..registryValue)
-    log(ngx.INFO, "Parsing took "..os.clock()-parsingClockStart.." CPU seconds")
+    log(INFO, "Registry value from request  "..registryValue)
+    log(INFO, "Parsing took "..os.clock()-parsingClockStart.." CPU seconds")
   end
 
   -- 
@@ -65,8 +67,8 @@ function LCE_RouteByHeader:access(config)
     kong.response.exit(config.error_response_status_code, { message = "[LCE] " .. err })
   end
   if debug then
-    log(ngx.INFO, "Route from registry "..upstreamUrl)
-    log(ngx.INFO, "Lookup took "..os.clock()-lookupClockStart.." CPU seconds")
+    log(INFO, "Route from registry "..upstreamUrl)
+    log(INFO, "Lookup took "..os.clock()-lookupClockStart.." CPU seconds")
   end
 
   --
@@ -77,10 +79,10 @@ function LCE_RouteByHeader:access(config)
   local upstream_path = combine_paths(splitUrl.path, kong.request.get_path())
   -- Error and debugging on this lookup
   if debug then
-    log(ngx.INFO, "Path ["..tostring(splitUrl.path).."] + ["..kong.request.get_path().."] = "..(upstream_path))
-    log(ngx.INFO, "Query ["..tostring(splitUrl.query).."] + ["..kong.request.get_raw_query().."] = "..(upstream_query))
-    log(ngx.INFO, "Host: "..(splitUrl.host))
-    log(ngx.INFO, "Port: "..tostring(splitUrl.port))
+    log(INFO, "Path ["..tostring(splitUrl.path).."] + ["..kong.request.get_path().."] = "..(upstream_path))
+    log(INFO, "Query ["..tostring(splitUrl.query).."] + ["..kong.request.get_raw_query().."] = "..(upstream_query))
+    log(INFO, "Host: "..(splitUrl.host))
+    log(INFO, "Port: "..tostring(splitUrl.port))
   end
   -- Build the new Kong Service
   kong.service.request.set_path(upstream_path)
@@ -88,7 +90,7 @@ function LCE_RouteByHeader:access(config)
   kong.service.set_target(splitUrl.host, splitUrl.port)
   -- Final debug log
   if debug then
-    log(ngx.INFO, "Plugin execution took "..os.clock()-clockStart.." CPU seconds")
+    log(INFO, "Plugin execution took "..os.clock()-clockStart.." CPU seconds")
   end
 end
 
