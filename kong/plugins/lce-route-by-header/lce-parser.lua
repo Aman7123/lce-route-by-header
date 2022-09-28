@@ -3,6 +3,11 @@ local tbl_to_string = require "kong.plugins.lce-route-by-header.helpers".tbl_to_
 local loop = require "kong.plugins.lce-route-by-header.helpers".loop_table
 local ngx = ngx
 
+
+
+local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
+local jp_validator = require "kong.plugins.lce-route-by-header.jsonpath".parse
+
 return function(config, params, headers)
   -- 
   -- Getters/Setters for this function variables
@@ -26,6 +31,13 @@ return function(config, params, headers)
   -- 
   -- Loop keys array
   for _, key in ipairs(keys) do
+    -- if they key contains a dollarsign ($) then it is a JSONPath
+    if key:find("$") then
+      local val = jp_value(params, key)
+      if val then
+        return val
+      end
+    end
     -- Loop through headers object of k/v pairs and search for keys matching
     local hVal = loop(headers, key)
     if hVal then
