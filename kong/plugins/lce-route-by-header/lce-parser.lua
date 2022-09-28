@@ -1,12 +1,8 @@
 local cjson = require "cjson.safe"
 local tbl_to_string = require "kong.plugins.lce-route-by-header.helpers".tbl_to_string
 local loop = require "kong.plugins.lce-route-by-header.helpers".loop_table
-local ngx = ngx
-
-
-
 local jp_value = require "kong.plugins.lce-route-by-header.jsonpath".value
-local jp_validator = require "kong.plugins.lce-route-by-header.jsonpath".parse
+local ngx = ngx
 
 return function(config, params, headers)
   -- 
