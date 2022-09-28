@@ -15,6 +15,7 @@ return {
         {key_names = {type = "array", required = true, elements = {type = "string"}}},
         {path_to_url = {type = "string", required = true}},
         {error_response_status_code = {type = "number", default = 500, required = true}},
+        {cache_status_header = typedefs.header_name { default = "LCE-Cache-Status" } },
         {skip_large_bodies = {type = "boolean", default = false}},
         {debug = {type = "boolean", default = true}},
       }
