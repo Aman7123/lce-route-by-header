@@ -24,3 +24,8 @@
 * [Activate](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad)
 * [View](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad/view)
 * [Log](https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad/log)
+
+## Custom LCE Get All Example
+* [Activate](https://mockbin.org/bin/6b5ad7c5-11b6-41ab-bf33-035e61a70e2a)
+* [View](https://mockbin.org/bin/6b5ad7c5-11b6-41ab-bf33-035e61a70e2a/view)
+* [Log](https://mockbin.org/bin/6b5ad7c5-11b6-41ab-bf33-035e61a70e2a/log)

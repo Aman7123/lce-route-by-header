@@ -17,6 +17,7 @@ Environment Configuration
 | LCE_REGISTRY_URL | https://mockbin.org/bin | This is the URL that leads to a GET All |
 | LCE_PATH_TO_ID | $.id | The [jp](https://github.com/hy05190134/lua-jsonpath) to the locationNumber |
 | LCE_PATH_TO_URL | $.url | The [jp](https://github.com/hy05190134/lua-jsonpath) to the upstream URL |
+| LCE_PATH_TO_ARRAY | $.data | (default $.*) The [jp](https://github.com/hy05190134/lua-jsonpath) to array of registry objects |
 | LCE_CACHE_TTL | 259200 | The time in seconds to keep the key:value pairs |
 | LCE_JITTER | 12 | (default 12) The hours to jitter the TTL for each record by |
 | LCE_DEBUG | 1 | 0=false / 1=true for use in init_worker precache |
@@ -31,6 +32,7 @@ Plugin Configuration
 | key_names | ✅ |  | CSV of case insensitive strings that are matched to an HTTP request information in the order `headers -> query params -> body`. Body search only works if form-data or JSON |
 | path_to_url | ✅ |  | A [jp](https://github.com/hy05190134/lua-jsonpath) value to a URL in the registry response that is used as the upstream |
 | error_response_status_code | ✅ | 500 | The global response code used for all internal errors in the code |
+| cache_status_header | | "LCE-Cache-Status" | If provided a "HIT" or "MISS" value relays if the cache was used (HIT) or if the upstream value was obtained from the registry api (MISS) |
 | skip_large_bodies |  | false | An optional value that defines whether Kong should send large bodies that are buffered to disk. Note that enabling this option will have an impact on system memory depending on the number of requests simultaneously in flight at any given point in time and on the maximum size of each request. Also this option blocks all requests being handled by the nginx workers. That could be tens of thousands of other transactions that are not being processed. For small I/O operations, such a delay would generally not be problematic. In cases where the body size is in the order of MB, such a delay would cause notable interruptions in request processing. Given all of the potential downsides resulting from enabling this option, consider increasing the [client_body_buffer_size](https://docs.konghq.com/gateway/latest/reference/configuration/#nginx_http_client_body_buffer_size) value instead |
 | debug |  | true | Creates logs in the proxy that explains processing flow using the INFO [log level](https://docs.konghq.com/gateway/latest/reference/configuration/#log_level) |
 
@@ -53,59 +55,9 @@ Plugin Config Example
 }
 ```
 
-Managing Internal Cache
+Tips for repopulating internal cache
 =================================
-Kong provides 3 [Admin API endpoints](https://docs.konghq.com/gateway/latest/reference/clustering/#interacting-with-the-cache-via-the-admin-api) for interacting with the internal cache, below here are 2 of the more important ones: 
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/cache/{cache_key}` | Where the cache key would be the value from the request we cached, the location id/location number |
-| `DELETE` | `/cache` | Purge cache |
-
-As an example here the [Kong Mockbin](https://mockbin.org/) website is used as the Registry API, the plugin configuration would be similar to the example above and would contain these values:
-```json
-{
-  "registry_api_url": "https://mockbin.org/bin/%s",
-  "value_matching_pattern": "%%s",
-  "key_names": [
-    "x-test"
-  ],
-  "path_to_url": "$.privateUrl"
-}
-```
-
-If an incoming request looked like this:
-```
-POST /api/v1/examples HTTP/1.1
-Host: example.com
-Content-Type: application/json
-x-test: fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad
-
-{"data": "eyJtZXNzYWdlIjogInRoaXMgaXMgZXhhbXBsZSBkYXRhIn0K"}
-```
-
-The cache key in this example is `fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad`. A lookup URL to the Registry is created like `https://mockbin.org/bin/fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad` and the response is:
-```json
-{
-  "id": "jsddfq1234asdf2z",
-  "createdDateTime": "2022-08-08T18:22:55.27889847",
-  "uploadedBy": "Aaron Renner <admin@aar.dev>",
-  "locationNumber": "1234",
-  "blockId": "AA",
-  "confluentId": "1",
-  "publicUrl": "https://proxy.lce.com/v1/anything",
-  "privateUrl": "https://10.0.24.13",
-  "mongoDBClusterMapping": {
-    "storeSpecific": "AppSettings_MongoConnectionString_StoreData_1",
-    "nonStoreSpecific": "AppSettings_MongoConnectionString_NonStoreData_1"
-  }
-}
-```
-
-The resulting cache would be a Key/Value pair of
-```
-fc4a1903-dd32-4543-a0ed-9d1c2d3c6aad=https://10.0.24.13
-```
+> "Trigger any kind of config change and that will automatically purge the cache. e.g. create a fake Consumer and just PATCH it whenever the cache needs to be dropped" - Datong Sun (Principal Engineer, Gateway Team, Kong)
 
 Installation
 =================================

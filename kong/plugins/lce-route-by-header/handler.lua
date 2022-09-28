@@ -60,6 +60,18 @@ function LCE_RouteByHeader:access(config)
   -- Start LCE Store Registry Lookup
   -- Getters/Setters for processing 
   local lookupClockStart = os.clock()
+
+
+  -- UPDATE 09/26/22
+  -- Checks if value is in cache
+  if config.cache_status_header then
+    if kong.cache:probe(registryValue) then
+      kong.response.set_header(config.cache_status_header, "HIT")
+    else
+      kong.response.set_header(config.cache_status_header, "MISS")
+    end
+  end
+
   -- Lookup the registryValue in the registry
   local upstreamUrl, err = lce_cache(config, registryValue)
   -- Error and debugging on this lookup
