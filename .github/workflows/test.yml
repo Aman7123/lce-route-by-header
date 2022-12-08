@@ -1,10 +1,6 @@
 name: "Test"
 
-on:
-  push:
-  pull_request:
-  schedule:
-  - cron: '0 0 * * *'  # every day at midnight, to test against nightlies
+on: [push, pull_request]
 
 jobs:
   test:
